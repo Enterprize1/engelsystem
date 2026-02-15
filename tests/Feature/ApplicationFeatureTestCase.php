@@ -48,4 +48,13 @@ abstract class ApplicationFeatureTestCase extends TestCase
         $dbsp->boot();
         $csp->boot();
     }
+
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+
+        // Removing the handlers added by including engelsystem.php in setUpBeforeClass
+        set_error_handler(null);
+        set_exception_handler(null);
+    }
 }
