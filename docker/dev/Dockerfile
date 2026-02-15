@@ -23,8 +23,14 @@ ENV TRUSTED_PROXIES 10.0.0.0/8,::ffff:10.0.0.0/8,\
 
 # Engelsystem development workspace
 # Contains all tools required to build / manage the system
-FROM es_base AS es_workspace
-RUN echo 'memory_limit = 1024M' > /usr/local/etc/php/conf.d/docker-php.ini
-RUN apk add --no-cache gettext git nodejs npm yarn
+FROM php:8.3-fpm-trixie AS es_workspace
+WORKDIR /var/www
+RUN apt-get -y update && \
+    apt-get install -y --no-install-recommends libicu-dev gettext git nodejs npm yarnpkg libgles2 gstreamer1.0-libav libxdamage1 libgtk-3-0t64 libatk1.0-0t64 libnspr4 libnss3 libgbm1 $PHPIZE_DEPS && \
+    pecl install pcov xdebug && \
+    docker-php-ext-install intl pcntl pdo_mysql sockets && \
+    docker-php-ext-enable pcov xdebug && \
+    echo 'memory_limit = 1024M' > /usr/local/etc/php/conf.d/docker-php.ini && \
+    echo -e "xdebug.mode=debug\nxdebug.discover_client_host=1\n" >> /usr/local/etc/php/conf.d/xdebug.ini
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 ENTRYPOINT php -r 'sleep(PHP_INT_MAX);'
